@@ -23,7 +23,8 @@ SOFTWARE.
 */
 
 import * as THREE from "three";
-import { Pane } from "tweakpane"
+import Stats from "three/addons/libs/stats.module.js";
+import { Pane } from "tweakpane";
 
 const VERTEX_SHADER = `
     varying vec2 v_uv;
@@ -82,8 +83,9 @@ void main() {
 
 
 const params = {
-    resolution: 50, // In percentage
-    scale: true,
+    canvasResolution: 50, // In percentage
+    canvasScale: true,
+    fpsDisplay: false,
 };
 
 const geometry = new THREE.PlaneGeometry(1, 1);
@@ -96,19 +98,29 @@ const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
 camera.position.z = 1;
 
 const renderer = new THREE.WebGLRenderer({});
-const updateRendererSize = () => {
-    renderer.setSize(window.innerWidth * params.resolution / 100, window.innerHeight*params.resolution / 100);
-    if (params.scale) {
+document.body.appendChild(renderer.domElement);
+
+const stats = new Stats()
+document.body.appendChild(stats.dom)
+
+const applyDisplayParams = () => {
+    renderer.setSize(window.innerWidth * params.canvasResolution / 100, window.innerHeight * params.canvasResolution / 100);
+    if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0";
     }
+    stats.dom.hidden = !params.fpsDisplay;
 }
-document.body.appendChild(renderer.domElement);
-updateRendererSize();
+applyDisplayParams();
 
-renderer.setAnimationLoop(() => renderer.render(scene, camera));
+renderer.setAnimationLoop(() => {
+    renderer.render(scene, camera);
+    if (params.fpsDisplay) {
+        stats.update();
+    }
+});
 
-window.addEventListener("resize", (event) => {
-    updateRendererSize();
+window.addEventListener("resize", (_event) => {
+    applyDisplayParams();
 });
 
 
@@ -116,28 +128,33 @@ window.addEventListener("resize", (event) => {
 //////////////////////
 
 const pane = new Pane({
-    title: 'Parameters',
+    title: "Parameters",
     expanded: true,
 });
 
 const displayFolder = pane.addFolder({
-    title: 'Display',
+    title: "Display",
     expanded: true,
 });
 
 displayFolder
-    .addBinding(params, 'resolution', {
+    .addBinding(params, "canvasResolution", {
+        label: "Resolution",
         step: 1,
         min: 1,
         max: 100,
         format: (v) => v + " %",
     })
-    .on('change', (ev) => {
-        updateRendererSize();
+    .on("change", (_ev) => {
+        applyDisplayParams();
     });
-
 displayFolder
-    .addBinding(params, "scale")
-    .on('change', (ev) => {
-        updateRendererSize();
+    .addBinding(params, "canvasScale", { label: "Full screen" })
+    .on("change", (_ev) => {
+        applyDisplayParams();
+    });
+displayFolder
+    .addBinding(params, "fpsDisplay", { label: "Display FPS" })
+    .on("change", (_ev) => {
+        applyDisplayParams();
     });
