@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import * as THREE from 'three';
+import * as THREE from "three";
+import { Pane } from "tweakpane"
 
 const VERTEX_SHADER = `
     varying vec2 v_uv;
@@ -79,22 +80,64 @@ void main() {
 }
 `;
 
-const geometry = new THREE.PlaneGeometry( 1, 1 );
-const material = new THREE.ShaderMaterial({vertexShader: VERTEX_SHADER, fragmentShader: FRAGMENT_SHADER});
-const canvas = new THREE.Mesh( geometry, material );
+
+const params = {
+    resolution: 50, // In percentage
+    scale: true,
+};
+
+const geometry = new THREE.PlaneGeometry(1, 1);
+const material = new THREE.ShaderMaterial({ vertexShader: VERTEX_SHADER, fragmentShader: FRAGMENT_SHADER });
+const canvas = new THREE.Mesh(geometry, material);
 const scene = new THREE.Scene();
-scene.add( canvas );
+scene.add(canvas);
 
 const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
 camera.position.z = 1;
 
 const renderer = new THREE.WebGLRenderer({});
-const updateRendererSize = () => renderer.setSize( window.innerWidth, window.innerHeight );-
-document.body.appendChild( renderer.domElement );
+const updateRendererSize = () => {
+    renderer.setSize(window.innerWidth * params.resolution / 100, window.innerHeight*params.resolution / 100);
+    if (params.scale) {
+        renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0";
+    }
+}
+document.body.appendChild(renderer.domElement);
 updateRendererSize();
 
-renderer.setAnimationLoop( () => renderer.render( scene, camera ) );
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
 
 window.addEventListener("resize", (event) => {
     updateRendererSize();
 });
+
+
+// Configure Tweakpane
+//////////////////////
+
+const pane = new Pane({
+    title: 'Parameters',
+    expanded: true,
+});
+
+const displayFolder = pane.addFolder({
+    title: 'Display',
+    expanded: true,
+});
+
+displayFolder
+    .addBinding(params, 'resolution', {
+        step: 1,
+        min: 1,
+        max: 100,
+        format: (v) => v + " %",
+    })
+    .on('change', (ev) => {
+        updateRendererSize();
+    });
+
+displayFolder
+    .addBinding(params, "scale")
+    .on('change', (ev) => {
+        updateRendererSize();
+    });
