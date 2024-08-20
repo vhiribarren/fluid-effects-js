@@ -79,21 +79,22 @@ void main() {
 }
 `;
 
-const width = window.innerWidth;
-const height = window.innerHeight;
-
-const camera = new THREE.OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 0.1, 10);
-camera.position.z = 1;
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
-
-const geometry = new THREE.PlaneGeometry( width, height );
+const geometry = new THREE.PlaneGeometry( 1, 1 );
 const material = new THREE.ShaderMaterial({vertexShader: VERTEX_SHADER, fragmentShader: FRAGMENT_SHADER});
 const canvas = new THREE.Mesh( geometry, material );
-
 const scene = new THREE.Scene();
 scene.add( canvas );
 
+const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
+camera.position.z = 1;
+
+const renderer = new THREE.WebGLRenderer({});
+const updateRendererSize = () => renderer.setSize( window.innerWidth, window.innerHeight );-
+document.body.appendChild( renderer.domElement );
+updateRendererSize();
+
 renderer.setAnimationLoop( () => renderer.render( scene, camera ) );
+
+window.addEventListener("resize", (event) => {
+    updateRendererSize();
+});
