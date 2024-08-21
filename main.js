@@ -28,45 +28,62 @@ import { Pane } from "tweakpane";
 import VERTEX_SHADER from "./shaders/vtx_default.js";
 import FRAGMENT_SHADER_TEXTURE from "./shaders/frg_texture.js";
 
-
+// Global parameters managed by Tweakpane
 const params = {
     canvasResolution: 50, // In percentage
     canvasScale: true,
     fpsDisplay: false,
 };
 
-const geometry = new THREE.PlaneGeometry(1, 1);
-const material = new THREE.ShaderMaterial({
-    vertexShader: VERTEX_SHADER,
-    fragmentShader: FRAGMENT_SHADER_TEXTURE,
-    uniforms: {
-        uTexture: { value: new THREE.TextureLoader().load("rustacean-orig-noshadow.png") }
-      }
-});
-const canvas = new THREE.Mesh(geometry, material);
-const scene = new THREE.Scene();
-scene.add(canvas);
-
+// Common Three.js elements
+const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
 camera.position.z = 1;
-
 const renderer = new THREE.WebGLRenderer({});
 document.body.appendChild(renderer.domElement);
+renderer.getContext()
 
+// To display FPS statistics
 const stats = new Stats()
 document.body.appendChild(stats.dom)
 
+// Step 1 rendering
+let outputRenderTarget = new THREE.WebGLRenderTarget(1, 1);
+const ferrisTexture = new THREE.TextureLoader().load("rustacean-orig-noshadow.png");
+const materialStep1 = new THREE.ShaderMaterial({
+    vertexShader: VERTEX_SHADER,
+    fragmentShader: FRAGMENT_SHADER_TEXTURE,
+    uniforms: {
+        uTexture: { value: ferrisTexture }
+      }
+});
+const sceneStep1 = new THREE.Scene();
+sceneStep1.add(new THREE.Mesh(canvasGeometry, materialStep1));
+
+// Final rendering of texture
+const materialFinal = new THREE.MeshBasicMaterial({map: outputRenderTarget.texture});
+const sceneFinal = new THREE.Scene();
+sceneFinal.add(new THREE.Mesh(canvasGeometry, materialFinal));
+
 const applyDisplayParams = () => {
-    renderer.setSize(window.innerWidth * params.canvasResolution / 100, window.innerHeight * params.canvasResolution / 100);
+    const newWidth = window.innerWidth * params.canvasResolution / 100;
+    const newHeight = window.innerHeight * params.canvasResolution / 100;
+    renderer.setSize(newWidth, newHeight);
+    outputRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
+    materialFinal.map = outputRenderTarget.texture;
     if (params.canvasScale) {
-        renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0";
+        renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;  image-rendering: pixelated";
     }
     stats.dom.hidden = !params.fpsDisplay;
 }
 applyDisplayParams();
 
+// Rendering
 renderer.setAnimationLoop(() => {
-    renderer.render(scene, camera);
+    renderer.setRenderTarget(outputRenderTarget);
+    renderer.render(sceneStep1, camera);
+    renderer.setRenderTarget(null);
+    renderer.render(sceneFinal, camera);
     if (params.fpsDisplay) {
         stats.update();
     }
