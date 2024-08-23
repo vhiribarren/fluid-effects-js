@@ -22,18 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-const FRAGMENT_SHADER_INC_COLOR = `
 varying vec2 v_uv;
-uniform float uTime;
-uniform sampler2D uTexture;
-void main() {
-    if (int(gl_FragCoord.x + gl_FragCoord.y) % 2 == 0) {
-        gl_FragColor = texture2D(uTexture, v_uv)+ vec4(0.002, 0.0, 0.0, 1.0);
-    }
-    else {
-        gl_FragColor = vec4(0.0);
-    }
-}
-`;
 
-export default FRAGMENT_SHADER_INC_COLOR;
+void main() {
+    v_uv = uv;
+    vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+    vec4 viewPosition = viewMatrix * modelPosition;
+    vec4 projectedPosition = projectionMatrix * viewPosition;
+    gl_Position = projectedPosition;
+}

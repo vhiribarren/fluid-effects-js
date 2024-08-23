@@ -22,15 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-const VERTEX_SHADER = `
-    varying vec2 v_uv;
-    void main() {
-        v_uv = uv;
-        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-        vec4 viewPosition = viewMatrix * modelPosition;
-        vec4 projectedPosition = projectionMatrix * viewPosition;
-        gl_Position = projectedPosition;
-    }
-`;
+varying vec2 v_uv;
+uniform sampler2D uTexture;
 
-export default VERTEX_SHADER;
+void main() {
+    vec2 canvas_size = gl_FragCoord.xy / v_uv;
+    float canvas_ratio = canvas_size.x / canvas_size.y;
+    vec2 uv = v_uv * vec2(canvas_ratio, 1.0); // Cancel screen deformation
+    ivec2 texture_size = textureSize(uTexture, 1);
+    float texture_ratio = float(texture_size.x)/float(texture_size.y);
+    gl_FragColor = texture2D(uTexture, uv*vec2(1.0/texture_ratio, 1.0));
+}

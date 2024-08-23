@@ -25,8 +25,10 @@ SOFTWARE.
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import { Pane } from "tweakpane";
-import VERTEX_SHADER from "./shaders/vtx_default.js";
-import FRAGMENT_SHADER_INC_COLOR from "./shaders/frg_inc_color.js";
+import { textFileLoader } from "./utils.js";
+
+const VShaderDefault = await textFileLoader("/shaders/vtx_default.glsl");
+const FShaderIncColor = await textFileLoader("/shaders/frg_inc_color.glsl");
 
 // Global parameters managed by Tweakpane
 const params = {
@@ -54,8 +56,8 @@ document.body.appendChild(stats.dom);
 let inputRenderTarget = new THREE.WebGLRenderTarget();
 let outputRenderTarget = new THREE.WebGLRenderTarget();
 const materialStep1 = new THREE.ShaderMaterial({
-    vertexShader: VERTEX_SHADER,
-    fragmentShader: FRAGMENT_SHADER_INC_COLOR,
+    vertexShader: VShaderDefault,
+    fragmentShader: FShaderIncColor,
     uniforms: {
         uTexture: { value: inputRenderTarget.texture },
         uTime: { value: 0.0 },

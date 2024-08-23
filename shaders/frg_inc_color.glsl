@@ -22,17 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-const FRAGMENT_SHADER_TEXTURE = `
 varying vec2 v_uv;
+uniform float uTime;
 uniform sampler2D uTexture;
-void main() {
-    vec2 canvas_size = gl_FragCoord.xy / v_uv;
-    float canvas_ratio = canvas_size.x / canvas_size.y;
-    vec2 uv = v_uv * vec2(canvas_ratio, 1.0); // Cancel screen deformation
-    ivec2 texture_size = textureSize(uTexture, 1);
-    float texture_ratio = float(texture_size.x)/float(texture_size.y);
-    gl_FragColor = texture2D(uTexture, uv*vec2(1.0/texture_ratio, 1.0));
-}
-`;
 
-export default FRAGMENT_SHADER_TEXTURE;
+void main() {
+    if (int(gl_FragCoord.x + gl_FragCoord.y) % 2 == 0) {
+        gl_FragColor = texture2D(uTexture, v_uv)+ vec4(0.002, 0.0, 0.0, 1.0);
+    }
+    else {
+        gl_FragColor = vec4(0.0);
+    }
+}

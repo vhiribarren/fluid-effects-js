@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-const FRAGMENT_SHADER_HSL = `
 varying vec2 v_uv;
 
 const float PI = 3.14;
@@ -64,6 +63,3 @@ void main() {
 
     gl_FragColor = vec4(color, 1.0);
 }
-`;
-
-export default FRAGMENT_SHADER_HSL;
