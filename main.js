@@ -43,7 +43,7 @@ const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
 camera.position.z = 1;
 const renderer = new THREE.WebGLRenderer({});
-renderer.setClearAlpha(0.0);
+renderer.setClearAlpha(0.0); // Canvas is transparent by default
 document.body.appendChild(renderer.domElement);
 
 // To display FPS statistics
@@ -51,35 +51,39 @@ const stats = new Stats()
 document.body.appendChild(stats.dom);
 
 // Step 1 rendering
-let inputRenderTarget = new THREE.WebGLRenderTarget(10, 10, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
-let outputRenderTarget = new THREE.WebGLRenderTarget(10, 10, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
-
+let inputRenderTarget = new THREE.WebGLRenderTarget();
+let outputRenderTarget = new THREE.WebGLRenderTarget();
 const materialStep1 = new THREE.ShaderMaterial({
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER_INC_COLOR,
     uniforms: {
         uTexture: { value: inputRenderTarget.texture },
         uTime: { value: 0.0 },
-      }
+    }
 });
 const sceneStep1 = new THREE.Scene();
 sceneStep1.add(new THREE.Mesh(canvasGeometry, materialStep1));
 
 // Final rendering of texture
-const materialFinal = new THREE.MeshBasicMaterial({map: outputRenderTarget.texture});
+const materialFinal = new THREE.MeshBasicMaterial({ map: outputRenderTarget.texture });
 materialFinal.transparent = true;
 const sceneFinal = new THREE.Scene();
 sceneFinal.add(new THREE.Mesh(canvasGeometry, materialFinal));
 
+// Helpers to switch back and front drawing buffers
+const switchStep1RenderTargets = () => {
+    [inputRenderTarget, outputRenderTarget] = [outputRenderTarget, inputRenderTarget];
+    materialStep1.uniforms.uTexture.value = inputRenderTarget.texture;
+    materialFinal.map = outputRenderTarget.texture;
+}
 
-
+// Configure elements depending on window and Tweakpane
 const applyDisplayParams = () => {
     const newWidth = window.innerWidth * params.canvasResolution / 100;
     const newHeight = window.innerHeight * params.canvasResolution / 100;
-    renderer.setSize(100, 100);
-    //outputRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
-    //materialFinal.map = outputRenderTarget.texture;
-    //inputRenderTarget = new THREE.WebGLRenderTarget(newWidth, newHeight);
+    inputRenderTarget.setSize(newWidth, newHeight);
+    outputRenderTarget.setSize(newWidth, newHeight);
+    renderer.setSize(newWidth, newHeight);
     if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;  image-rendering: pixelated";
     }
@@ -94,17 +98,15 @@ renderer.setAnimationLoop(() => {
     renderer.render(sceneStep1, camera);
     renderer.setRenderTarget(null);
     renderer.render(sceneFinal, camera);
-    // Switch input/output targets
-    [inputRenderTarget, outputRenderTarget] = [outputRenderTarget, inputRenderTarget];
-    materialStep1.uniforms.uTexture.value = inputRenderTarget.texture;
-    materialFinal.map = outputRenderTarget.texture;
+    switchStep1RenderTargets();
     if (params.fpsDisplay) {
         stats.update();
     }
 });
 
 window.addEventListener("resize", (_event) => {
-    applyDisplayParams();
+    //Disabled for now
+    //applyDisplayParams();
 });
 
 
