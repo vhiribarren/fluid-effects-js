@@ -28,7 +28,7 @@ import { Pane } from "tweakpane";
 import { textFileLoader } from "./utils.js";
 
 const VShaderDefault = await textFileLoader("/shaders/vtx_default.glsl");
-const FShaderIncColor = await textFileLoader("/shaders/frg_inc_color.glsl");
+const FShaderFireBasic = await textFileLoader("/shaders/frg_fire_basic.glsl");
 
 // Global parameters managed by Tweakpane
 const params = {
@@ -57,10 +57,11 @@ let inputRenderTarget = new THREE.WebGLRenderTarget();
 let outputRenderTarget = new THREE.WebGLRenderTarget();
 const materialStep1 = new THREE.ShaderMaterial({
     vertexShader: VShaderDefault,
-    fragmentShader: FShaderIncColor,
+    fragmentShader: FShaderFireBasic,
     uniforms: {
         uTexture: { value: inputRenderTarget.texture },
-        uTime: { value: 0.0 },
+        uTimeMs: { value: 0.0 },
+        uScreenSize: { value: new THREE.Vector2(0.0, 0.0) },
     }
 });
 const sceneStep1 = new THREE.Scene();
@@ -85,6 +86,7 @@ const applyDisplayParams = () => {
     const newHeight = window.innerHeight * params.canvasResolution / 100;
     inputRenderTarget.setSize(newWidth, newHeight);
     outputRenderTarget.setSize(newWidth, newHeight);
+    materialStep1.uniforms.uScreenSize.value = new THREE.Vector2(newWidth, newHeight);
     renderer.setSize(newWidth, newHeight);
     if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;  image-rendering: pixelated";
@@ -95,7 +97,7 @@ applyDisplayParams();
 
 // Rendering
 renderer.setAnimationLoop(() => {
-    materialStep1.uniforms.uTime.value = Date.now() - baseTime;
+    materialStep1.uniforms.uTimeMs.value = Date.now() - baseTime;
     renderer.setRenderTarget(outputRenderTarget);
     renderer.render(sceneStep1, camera);
     renderer.setRenderTarget(null);
