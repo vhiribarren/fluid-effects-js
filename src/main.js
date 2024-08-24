@@ -27,7 +27,6 @@ import Stats from "three/addons/libs/stats.module.js";
 import { Pane } from "tweakpane";
 import { textFileLoader } from "./utils.js";
 
-const VShaderDefault = await textFileLoader("/shaders/vtx_default.glsl");
 const FShaderFireBasic = await textFileLoader("/shaders/frg_fire_basic.glsl");
 
 // Global parameters managed by Tweakpane
@@ -53,22 +52,21 @@ const stats = new Stats()
 document.body.appendChild(stats.dom);
 
 // Step 1 rendering
-let inputRenderTarget = new THREE.WebGLRenderTarget();
-let outputRenderTarget = new THREE.WebGLRenderTarget();
+let inputRenderTarget = new THREE.WebGLRenderTarget(undefined, undefined, {count: 2});
+let outputRenderTarget = new THREE.WebGLRenderTarget(undefined, undefined, {count: 2}); // channel 0 -> coefficients, channel 1 -> colors to display
 const materialStep1 = new THREE.ShaderMaterial({
-    vertexShader: VShaderDefault,
     fragmentShader: FShaderFireBasic,
+    glslVersion: THREE.GLSL3,
     uniforms: {
-        uTexture: { value: inputRenderTarget.texture },
+        uInputCoeffs: { value: inputRenderTarget.textures[0] },
         uTimeMs: { value: 0.0 },
-        uScreenSize: { value: new THREE.Vector2(0.0, 0.0) },
     }
 });
 const sceneStep1 = new THREE.Scene();
 sceneStep1.add(new THREE.Mesh(canvasGeometry, materialStep1));
 
 // Final rendering of texture
-const materialFinal = new THREE.MeshBasicMaterial({ map: outputRenderTarget.texture });
+const materialFinal = new THREE.MeshBasicMaterial({ map: outputRenderTarget.textures[1] });
 materialFinal.transparent = true;
 const sceneFinal = new THREE.Scene();
 sceneFinal.add(new THREE.Mesh(canvasGeometry, materialFinal));
@@ -76,8 +74,8 @@ sceneFinal.add(new THREE.Mesh(canvasGeometry, materialFinal));
 // Helpers to switch back and front drawing buffers
 const switchStep1RenderTargets = () => {
     [inputRenderTarget, outputRenderTarget] = [outputRenderTarget, inputRenderTarget];
-    materialStep1.uniforms.uTexture.value = inputRenderTarget.texture;
-    materialFinal.map = outputRenderTarget.texture;
+    materialStep1.uniforms.uInputCoeffs.value = inputRenderTarget.textures[0];
+    materialFinal.map = outputRenderTarget.textures[1];
 }
 
 // Configure elements depending on window and Tweakpane
@@ -86,7 +84,6 @@ const applyDisplayParams = () => {
     const newHeight = window.innerHeight * params.canvasResolution / 100;
     inputRenderTarget.setSize(newWidth, newHeight);
     outputRenderTarget.setSize(newWidth, newHeight);
-    materialStep1.uniforms.uScreenSize.value = new THREE.Vector2(newWidth, newHeight);
     renderer.setSize(newWidth, newHeight);
     if (params.canvasScale) {
         renderer.domElement.style.cssText = "width: 100%; margin:0; padding: 0;  image-rendering: pixelated";

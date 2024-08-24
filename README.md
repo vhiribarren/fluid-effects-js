@@ -9,9 +9,9 @@ Technology currently used:
 - Tweakpane for parameter control
 
 
-## References
+## Resources
 
-### Reference articles and papers
+### Reference articles and papers on fluid simulation
 
 - [Mark J. Harris, in GPU Gems Chapter 38, NVidia publication](https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu)
 - [Jos Stam, "Stable Fluids", In SIGGRAPH 99 Conference Proceedings, Annual Conference Series, August 1999, 121-128.](https://www.dgp.toronto.edu/people/stam/reality/Research/pdf/ns.pdf)
@@ -25,6 +25,9 @@ Technology currently used:
 - https://github.com/mharrys/fluids-2d
 - https://github.com/rachelbhadra/smoke_simulator
 
+### Other resources
+
+- [(video) Inigo Quilez, "A Simple formula to create beautiful color palettes"](https://www.youtube.com/shorts/TH3OTy5fTog)
 
 ## License
 

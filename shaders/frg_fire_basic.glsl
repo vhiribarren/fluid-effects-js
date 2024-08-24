@@ -22,10 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-varying vec2 v_uv;
+layout(location = 0) out vec4 outputCoeff;
+layout(location = 1) out vec4 outputColor;
+
 uniform float uTimeMs;
-uniform vec2 uScreenSize;
-uniform sampler2D uTexture;
+uniform sampler2D uInputCoeffs;
+
+float PI = 3.141;
+float DOWNCREASE_MIN = 0.005;
+
+vec3 palette_coeff_a = vec3(0.5, 0.5, 0.5);
+vec3 palette_coeff_b = vec3(0.5, 0.5, 0.5);
+vec3 palette_coeff_c = vec3(1.0, 1.0, 0.5);
+vec3 palette_coeff_d = vec3(0.79, 0.88, 0.29);
+vec3 color_palette(float val) {
+    // From Inigo Quilez - https://www.youtube.com/shorts/TH3OTy5fTog
+    return palette_coeff_a + palette_coeff_b*cos(2.0*PI*(val*palette_coeff_c+palette_coeff_d));
+}
 
 float random(vec2 uv) {
   return fract(sin(dot(uv.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -43,20 +56,21 @@ float average_noise_smoothstep(vec2 scaled_uv) {
 }
 
 void main() {
-    gl_FragColor.rgb = texture2D(uTexture, gl_FragCoord.xy/uScreenSize).rgb;
-    gl_FragColor.a = 1.0;
-    vec3 leftColor = texture2D(uTexture, (gl_FragCoord.xy + vec2(-1.0, 0.0))/uScreenSize).rgb;
-    vec3 rightColor = texture2D(uTexture, (gl_FragCoord.xy + vec2(1.0, 0.0))/uScreenSize).rgb;
-    vec3 topColor = texture2D(uTexture, (gl_FragCoord.xy + vec2(0.0, 1.0))/uScreenSize).rgb;
-    vec3 downColor = vec3(0.0);
+    outputCoeff.r = texelFetch(uInputCoeffs, ivec2(gl_FragCoord.xy), 0).r;
+    float leftCoeff =  texelFetch(uInputCoeffs, ivec2(gl_FragCoord.xy) + ivec2(-1, 0), 0).r;
+    float rightCoeff = texelFetch(uInputCoeffs, ivec2(gl_FragCoord.xy )+ ivec2(1, 0), 0).r;
+    float topCoeff = texelFetch(uInputCoeffs, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).r;
+    float downCoeff = 0.0;
     if (gl_FragCoord.y < 1.0) {
-        downColor.r = average_noise_smoothstep(vec2(gl_FragCoord.x/10.0, uTimeMs/100.0));
+        downCoeff = average_noise_smoothstep(vec2(gl_FragCoord.x/10.0, uTimeMs/100.0));
     }
     else {
-        downColor = texture2D(uTexture, (gl_FragCoord.xy + vec2(0.0, -1.0))/uScreenSize).rgb;
+        downCoeff = texelFetch(uInputCoeffs, ivec2(gl_FragCoord.xy) + ivec2(0, -1), 0).r;
     }
-    vec3 colorDelta = 0.1*(5.0*downColor + leftColor + rightColor + topColor - 8.0*gl_FragColor.rgb);
-    float minimum = 0.005;
-    if (colorDelta.r >= -minimum && colorDelta.r < 0.0) colorDelta.r = -minimum;
-    gl_FragColor.r  +=  colorDelta.r;
+    float coeffDelta = 0.1*(5.0*downCoeff + leftCoeff + rightCoeff + topCoeff - 8.0*outputCoeff.r);
+    if (coeffDelta < 0.0 && coeffDelta >= -DOWNCREASE_MIN){
+        coeffDelta = -DOWNCREASE_MIN;
+    } 
+    outputCoeff.r += coeffDelta;
+    outputColor = vec4(color_palette(outputCoeff.r), 1.0);
 }
