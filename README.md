@@ -27,6 +27,7 @@ Technology currently used:
 
 ### Other resources
 
+- [Omar Shehata, "How to Write a Smoke Shader"](https://code.tutsplus.com/how-to-write-a-smoke-shader--cms-25587t)
 - [(video) Inigo Quilez, "A Simple formula to create beautiful color palettes"](https://www.youtube.com/shorts/TH3OTy5fTog)
 
 ## License
