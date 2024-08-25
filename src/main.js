@@ -25,6 +25,7 @@ SOFTWARE.
 import * as THREE from "three";
 import Stats from "three/addons/libs/stats.module.js";
 import { Pane } from "tweakpane";
+import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
 import { textFileLoader } from "./utils.js";
 
 const FShaderFireBasic = await textFileLoader("/shaders/frg_fire_basic.glsl");
@@ -39,6 +40,8 @@ const params = {
     paletteContrast: { x: 1.0, y: 1.0, z: 1.0 },
     paletteFreq: { x: 2.0, y: 0.5, z: 0.5 },
     palettePhase: { x: 0.5, y: 0.5, z: 0.5 },
+    transparentRange: {min: 0.8, max: 1.0},
+    backgroundColor:  {r: 0, g: 0, b: 0, a: 1.0},
     animRun: true,
     verticalForce: 5.0,
     dissipationMinimum: 0.01,
@@ -50,7 +53,6 @@ const canvasGeometry = new THREE.PlaneGeometry(1, 1);
 const camera = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
 camera.position.z = 1;
 const renderer = new THREE.WebGLRenderer({});
-renderer.setClearAlpha(0.0); // Canvas is transparent by default
 document.body.appendChild(renderer.domElement);
 
 // To display FPS statistics
@@ -75,6 +77,8 @@ const materialStep1 = new THREE.ShaderMaterial({
         uPaletteContrast: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
         uPaletteFreq: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
         uPalettePhase: { value: new THREE.Vector3(0.0, 0.0, 0.0) },
+        uTransparentSmoothMin: { value: 0.0 },
+        uTransparentSmoothMax: { value: 0.0 },
     }
 });
 const sceneStep1 = new THREE.Scene();
@@ -114,9 +118,13 @@ const applyDisplayParams = () => {
     materialStep1.uniforms.uPaletteContrast.value = paramPoint3ToVector3(params.paletteContrast);
     materialStep1.uniforms.uPaletteFreq.value = paramPoint3ToVector3(params.paletteFreq);
     materialStep1.uniforms.uPalettePhase.value = paramPoint3ToVector3(params.palettePhase);
+    materialStep1.uniforms.uTransparentSmoothMin.value = params.transparentRange.min;
+    materialStep1.uniforms.uTransparentSmoothMax.value = params.transparentRange.max;
     materialStep1.uniforms.uVerticalForce.value = params.verticalForce;
     materialStep1.uniforms.uDissipationMinimum.value = params.dissipationMinimum;
     materialStep1.uniforms.uDiffusionCoeff.value = params.diffusionCoeff;
+    renderer.autoClear = true;
+    renderer.setClearColor(new THREE.Color(params.backgroundColor.r, params.backgroundColor.g, params.backgroundColor.b), params.backgroundColor.a);
 }
 applyDisplayParams();
 
@@ -154,6 +162,7 @@ const pane = new Pane({
     title: "Parameters",
     expanded: true,
 });
+pane.registerPlugin(TweakpaneEssentialsPlugin);
 pane.on("change", (_ev) => {
     applyDisplayParams();
 });
@@ -200,6 +209,16 @@ colorPaletteFolder.addBinding(params, "palettePhase", {
     x: { min: 0, max: 1 },
     y: { min: 0, max: 1 },
     z: { min: 0, max: 1 },
+});
+colorPaletteFolder.addBinding(params, "transparentRange", {
+    label: "Transparent Range",
+    min: 0.0,
+    max: 1.0,
+});
+colorPaletteFolder.addBinding(params, "backgroundColor", {
+    label: "Background Color",
+    picker: 'inline',
+    color: {type: "float", alpha: true},
 });
 
 const fireFolder = pane.addFolder({

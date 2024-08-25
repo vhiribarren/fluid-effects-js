@@ -40,6 +40,8 @@ uniform vec3 uPaletteLuminosity;
 uniform vec3 uPaletteContrast;
 uniform vec3 uPaletteFreq;
 uniform vec3 uPalettePhase;
+uniform float uTransparentSmoothMin;
+uniform float uTransparentSmoothMax;
 
 vec3 color_palette(float val) {
     // From Inigo Quilez
@@ -64,7 +66,7 @@ float average_noise_smoothstep(vec2 scaled_uv) {
 }
 
 void renderDisplayedTexture() {
-    outputColor = vec4(color_palette(outputCoeff.r), 1.0);
+    outputColor = vec4(color_palette(outputCoeff.r), 1.0- smoothstep(uTransparentSmoothMin, uTransparentSmoothMax, 1.0-outputCoeff.r));
 }
 
 void main() {
