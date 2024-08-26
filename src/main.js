@@ -28,7 +28,7 @@ import { Pane } from "tweakpane";
 import * as TweakpaneEssentialsPlugin from "tweakpane/plugin-essentials";
 import { textFileLoader } from "./utils.js";
 
-const FShaderFireBasic = await textFileLoader("/shaders/frg_fire_basic.glsl");
+const FShaderFireBasic = await textFileLoader("./shaders/frg_fire_basic.glsl");
 
 // Global parameters managed by Tweakpane
 const params = {
