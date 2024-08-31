@@ -18,6 +18,11 @@ Technology currently used:
 - [Jos Stam, "Real-Time Fluid Dynamics for Games". Proceedings of the Game Developer Conference, March 2003.](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pdf/GDC03.pdf)
 - [Other publications from Jos Stem](https://www.dgp.toronto.edu/public_user/stam/reality/Research/pub.html)
 
+### Tutorials or simple examples
+
+- [Omar Shehata, "How to Write a Smoke Shader"](https://code.tutsplus.com/how-to-write-a-smoke-shader--cms-25587t)
+- [Shahriar Shahrabi, "Gentle Introduction to Realtime Fluid Simulation for Programmers and Technical Artists"](https://shahriyarshahrabi.medium.com/gentle-introduction-to-fluid-simulation-for-programmers-and-technical-artists-7c0045c40bac)
+
 ### Some existing implementations
 
 - https://github.com/PavelDoGreat/WebGL-Fluid-Simulation
@@ -27,8 +32,9 @@ Technology currently used:
 
 ### Other resources
 
-- [Omar Shehata, "How to Write a Smoke Shader"](https://code.tutsplus.com/how-to-write-a-smoke-shader--cms-25587t)
-- [(video) Inigo Quilez, "A Simple formula to create beautiful color palettes"](https://www.youtube.com/shorts/TH3OTy5fTog)
+- Inigo Quilez, "A Simple formula to create beautiful color palettes",
+  [Video](https://www.youtube.com/shorts/TH3OTy5fTog) &
+  [Article](https://iquilezles.org/articles/palettes/)
 
 ## License
 
